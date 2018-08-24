@@ -1,3 +1,8 @@
+
+range = editor.getSelectedBufferRange() # any range you like
+marker = editor.markBufferRange(range)
+decoration = editor.decorateMarker(marker, {type: 'line', class: 'my-line-class'})
+
 module.exports = FoldComments =
   config:
     autofold:
@@ -25,12 +30,13 @@ module.exports = FoldComments =
 
   foldAs: (mode, editor) ->
     editor ||= atom.workspace.getActiveTextEditor()
+    marker = editor.markBufferRange(row)
 
     eachFoldable = (f) ->
       for row in [0..editor.getLastBufferRow()]
         f(row) if editor.isFoldableAtBufferRow(row) && editor.isBufferRowCommented(row)
 
     switch mode
-      when 'toggle' then eachFoldable (row) -> editor.toggleFoldAtBufferRow(row)
-      when 'fold' then eachFoldable (row) -> editor.foldBufferRow(row)
-      when 'unfold' then eachFoldable (row) -> editor.unfoldBufferRow(row)
+      when 'toggle' then eachFoldable (row) -> editor.toggleFoldAtBufferRow(row),
+      when 'fold' then eachFoldable (row) -> editor.foldBufferRow(row), editor.decorateMarker(marker, {type: 'line', class: 'folded'}),
+      when 'unfold' then eachFoldable (row) -> editor.unfoldBufferRow(row), editor.decorateMarker(marker, {type: 'line', class: ''})
